@@ -1,0 +1,124 @@
+{
+   "name": "test",
+   "type": "monitor",
+   "monitor_type": "query_level_monitor",
+   "enabled": true,
+   "schedule": {
+      "period": {
+         "unit": "MINUTES",
+         "interval": 1
+      }
+   },
+   "inputs": [
+      {
+         "search": {
+            "indices": [
+               "opensearch_dashboards_sample_data_logs"
+            ],
+            "query": {
+               "size": 0,
+               "aggregations": {},
+               "query": {
+                  "bool": {
+                     "filter": [
+                        {
+                           "range": {
+                              "timestamp": {
+                                 "gte": "{{period_end}}||-1d",
+                                 "lte": "{{period_end}}",
+                                 "format": "epoch_millis"
+                              }
+                           }
+                        },
+                        {
+                           "range": {
+                              "machine.ram": {
+                                 "gt": 0
+                              }
+                           }
+                        }
+                     ]
+                  }
+               }
+            }
+         }
+      }
+   ],
+   "triggers": [
+      {
+         "query_level_trigger": {
+            "id": "UPK6cHwB2RFh8tPTqJCn",
+            "name": "test_trigger",
+            "severity": "1",
+            "condition": {
+               "script": {
+                  "source": "ctx.results[0].hits.total.value > 1",
+                  "lang": "painless"
+               }
+            },
+            "actions": [
+               {
+                  "id": "Z_K9cHwB2RFh8tPTH5DP",
+                  "name": "test_webhook",
+                  "destination_id": "VfK7cHwB2RFh8tPToZA2",
+                  "message_template": {
+                     "source": "Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the issue.\n  - Trigger: {{ctx.trigger.name}}\n  - Severity: {{ctx.trigger.severity}}\n  - Period start: {{ctx.periodStart}}\n  - Period end: {{ctx.periodEnd}}",
+                     "lang": "mustache"
+                  },
+                  "throttle_enabled": false,
+                  "subject_template": {
+                     "source": "",
+                     "lang": "mustache"
+                  }
+               }
+            ]
+         }
+      }
+   ],
+   "ui_metadata": {
+      "schedule": {
+         "timezone": null,
+         "frequency": "interval",
+         "period": {
+            "unit": "MINUTES",
+            "interval": 1
+         },
+         "daily": 0,
+         "weekly": {
+            "tue": false,
+            "wed": false,
+            "thur": false,
+            "sat": false,
+            "fri": false,
+            "mon": false,
+            "sun": false
+         },
+         "monthly": {
+            "type": "day",
+            "day": 1
+         },
+         "cronExpression": "0 */1 * * *"
+      },
+      "search": {
+         "searchType": "graph",
+         "timeField": "timestamp",
+         "aggregations": [],
+         "groupBy": [],
+         "bucketValue": 1,
+         "bucketUnitOfTime": "d",
+         "where": {
+            "fieldName": [
+               {
+                  "label": "memory",
+                  "type": "number"
+               }
+            ],
+            "fieldRangeEnd": 0,
+            "fieldRangeStart": 0,
+            "fieldValue": 100,
+            "operator": "is_less"
+         }
+      },
+      "monitor_type": "query_level_monitor"
+   }
+}
